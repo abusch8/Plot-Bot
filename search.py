@@ -3,14 +3,14 @@ import json
 
 search_term = input("Search: ")
 
-api_url = 'https://imdb-api.com/en/API/SearchMovie/k_k1c2il8w/{}'.format(search_term)
+api_url = "https://imdb-api.com/en/API/SearchMovie/k_k1c2il8w/{}".format(search_term)
 response = requests.get(api_url)
-results = response.json()["results"]
-for x in range(len(results)):
-    print("{}) {}".format(x + 1, results[x]["title"]))
+result = response.json()["results"]
+for x in range(len(result)):
+    print("{}) {}".format(x + 1, result[x]["title"]))
 index = int(input("Select a result: ")) - 1
 
-api_url = 'https://imdb-api.com/en/API/Title/k_k1c2il8w/{}'.format(results[index]["id"])
+api_url = "https://imdb-api.com/en/API/Title/k_k1c2il8w/{}".format(result[index]["id"])
 response = requests.get(api_url)
-results = json.dumps(response.json(), indent=4, separators=(", ", " = "))
-print(results)
+result = json.dumps(response.json(), indent=4, separators=(", ", " = "))
+print(result)
