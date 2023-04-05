@@ -3,7 +3,7 @@ import openai
 from dotenv import load_dotenv
 
 load_dotenv('.env.local')
-openai.api_key = os.getenv('API_URL')
+openai.api_key = os.getenv('API_KEY')
 
 def generate_response(prompt):
     model_engine = 'text-davinci-003'
