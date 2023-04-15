@@ -1,6 +1,6 @@
 import os
-import json
 import requests
+import json
 import openai
 from dotenv import load_dotenv
 
@@ -48,7 +48,7 @@ if __name__ == '__main__':
         index = int(input('Select a result: ')) - 1
 
         movie_info.append(get_movie_info(result[index]['id']))
-        print(f'####\n{movie_info[x]["title"].upper()}\n####\n{json_to_string(movie_info[x])}')
+        print(f'####\n{movie_info[x]["title"].upper()}\n####\n{json_to_string(movie_info[x])}\n')
 
     prompt = generate_prompt(movie_info);
     response = generate_response(prompt);
