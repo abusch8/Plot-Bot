@@ -3,6 +3,7 @@ import json
 import re
 
 OUTPUT_PATH = 'dataset.txt'
+LIMIT = 100
 
 def get_film_list(category):
     api_url = f'https://en.wikipedia.org/w/api.php?action=query&list=categorymembers&cmtitle=Category:{category}&cmlimit=500&format=json'
@@ -24,7 +25,8 @@ def parse_plot(page):
         if is_plot: plot.append(line)
     return plot
 
-def clear_file(): open(OUTPUT_PATH, 'w').close()
+def clear_file():
+    open(OUTPUT_PATH, 'w').close()
 
 def write_file(line):
     file = open(OUTPUT_PATH, 'a')
@@ -40,7 +42,7 @@ if __name__ == '__main__':
     film_list = get_film_list('American_science_fiction_films')
     print(json_to_string(film_list))
 
-    for x in range(10):
+    for x in range(LIMIT):
         film_page = get_film_page(film_list[x]['pageid'])
         plot = parse_plot(film_page)
         print('Writing file...')
