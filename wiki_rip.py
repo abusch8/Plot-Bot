@@ -29,6 +29,7 @@ def get_film_page(id):
 def preprocess_data(text):
     matches = re.findall(r'\[\[[^\[\]\|]*\|[^\[\]]*\]\]', text)
     for match in matches: text = text.replace(match, match.split('|')[1][:-2])
+    text = re.sub(r'^\{\{.*\|.*\}\}$', '', text)
     text = re.sub(r'\[\[', '', text)
     text = re.sub(r'\]\]', '', text)
     text = re.sub(r'\{\{', '', text)
