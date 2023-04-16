@@ -3,10 +3,11 @@ import json
 import re
 
 OUTPUT_PATH = 'dataset.txt'
+GENRE = 'American_science_fiction_films'
 LIMIT = 100
 
-def get_film_list(category):
-    api_url = f'https://en.wikipedia.org/w/api.php?action=query&list=categorymembers&cmtitle=Category:{category}&cmlimit=500&format=json'
+def get_film_list():
+    api_url = f'https://en.wikipedia.org/w/api.php?action=query&list=categorymembers&cmtitle=Category:{GENRE}&cmlimit=500&format=json'
     res = requests.get(api_url).json()
     return res['query']['categorymembers']
 
@@ -39,11 +40,14 @@ def json_to_string(data):
 if __name__ == '__main__':
     clear_file()
 
-    film_list = get_film_list('American_science_fiction_films')
+    film_list = get_film_list()
     print(json_to_string(film_list))
 
     for x in range(LIMIT):
-        film_page = get_film_page(film_list[x]['pageid'])
+        film_id, film_title = film_list[x]['pageid'], film_list[x]['title']
+
+        film_page = get_film_page(film_id)
         plot = parse_plot(film_page)
-        print('Writing file...')
+
+        print(f'Writing "{film_title}" [ID:{film_id}] to file...')
         for line in plot: write_file(f'{line}\n')
