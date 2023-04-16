@@ -1,26 +1,35 @@
-import requests
+import requests as req
 import json
 import re
 
+API_URL = 'https://en.wikipedia.org/w/api.php'
 OUTPUT_PATH = 'dataset.txt'
 GENRE = 'American_science_fiction_films'
 LIMIT = 100
 
 def get_film_list():
-    api_url = f'https://en.wikipedia.org/w/api.php?action=query&list=categorymembers&cmtitle=Category:{GENRE}&cmlimit=500&format=json'
-    res = requests.get(api_url).json()
+    res = req.get(API_URL, {
+        'action': 'query',
+        'list': 'categorymembers',
+        'cmtitle': f'Category:{GENRE}',
+        'cmlimit': '500',
+        'format': 'json'
+    }).json()
     return res['query']['categorymembers']
 
 def get_film_page(id):
-    api_url = f'https://en.wikipedia.org/w/api.php?action=parse&pageid={id}&prop=wikitext&format=json'
-    res = requests.get(api_url).json()
+    res = req.get(API_URL, {
+        'action': 'parse',
+        'pageid': id,
+        'prop': 'wikitext',
+        'format': 'json'
+    }).json()
     return res['parse']['wikitext']['*']
 
 def parse_plot(page):
     plot = []
-    lines = page.splitlines()
     is_plot = False
-    for line in lines:
+    for line in page.splitlines():
         if line == '==Plot==':
             is_plot = True
             continue
