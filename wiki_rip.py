@@ -12,7 +12,7 @@ def get_film_list():
         'action': 'query',
         'list': 'categorymembers',
         'cmtitle': f'Category:{GENRE}',
-        'cmlimit': '500',
+        'cmlimit': 500,
         'format': 'json'
     }).json()
     return res['query']['categorymembers']
@@ -26,6 +26,18 @@ def get_film_page(id):
     }).json()
     return res['parse']['wikitext']['*']
 
+def preprocess_data(text):
+    matches = re.findall(r'\[\[[^\[\]\|]*\|[^\[\]]*\]\]', text)
+    for match in matches: text = text.replace(match, match.split('|')[1][:-2])
+    text = re.sub(r'\[\[', '', text)
+    text = re.sub(r'\]\]', '', text)
+    text = re.sub(r'\{\{', '', text)
+    text = re.sub(r'\}\}', '', text)
+    text = re.sub(r'\'\'', '\"', text)
+    text = re.sub(r'<ref.*>*</ref>', '', text)
+    text = re.sub(r'^<!--.*-->$', '', text)
+    return text.strip()
+
 def parse_plot(page):
     plot = []
     is_plot = False
@@ -33,8 +45,10 @@ def parse_plot(page):
         if line == '==Plot==':
             is_plot = True
             continue
-        elif re.match(r'^.*==.*==.*$', line): is_plot = False
-        if is_plot: plot.append(line)
+        elif re.match(r'^.*==.*==.*$', line):
+            is_plot = False
+            break
+        if is_plot: plot.append(preprocess_data(line))
     return plot
 
 def clear_file():
@@ -55,11 +69,11 @@ if __name__ == '__main__':
     print(json_to_string(film_list))
 
     for x in range(LIMIT):
-        film_id, film_title = film_list[x]['pageid'], film_list[x]['title']
+        page_id, film_title = film_list[x]['pageid'], film_list[x]['title']
 
-        film_page = get_film_page(film_id)
+        film_page = get_film_page(page_id)
         plot = parse_plot(film_page)
 
-        print(f'Writing "{film_title}" [ID:{film_id}] to file...')
+        print(f'Writing "{film_title}" [ID:{page_id}] to file...')
         write_file(f'####{film_title}####\n')
         for line in plot: write_file(f'{line}\n')
