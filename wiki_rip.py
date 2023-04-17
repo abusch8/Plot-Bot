@@ -3,8 +3,8 @@ import json
 import re
 
 API_URL = 'https://en.wikipedia.org/w/api.php'
-OUTPUT_PATH = 'dataset.txt'
-GENRE = 'American_science_fiction_films'
+GENRE = 'American_horror_films'
+OUTPUT_PATH = f'data/{GENRE}.txt'
 
 def get_film_list(id=None):
     res = req.get(API_URL, {
@@ -63,7 +63,7 @@ def json_to_string(data):
     return json.dumps(data, indent=4, separators=(', ', ' = '))
 
 def expand_category(category):
-    print('####\nEXPANDING CATEGORY\n####\n')
+    print('####\nEXPANDING CATEGORY\n####')
     print(json_to_string(category))
     for page in category:
         title, pageid = page['title'], page['pageid']
@@ -73,7 +73,7 @@ def expand_category(category):
             continue
         film_page = get_film_page(pageid)
         plot = parse_plot(film_page)
-        print(f'Writing \033[1m\33[3m{title}\033[0m \033[96m[ID:{pageid}]\033[0m to file...')
+        print(f'Writing \033[1m\33[3m{title}\033[0m \033[96m[ID:{pageid}]\033[0m to {OUTPUT_PATH}')
         write_file(f'####{title}####\n')
         for line in plot: write_file(f'{line}\n')
 
