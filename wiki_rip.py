@@ -25,7 +25,7 @@ def get_film_page(id):
     }).json()
     return res['parse']['wikitext']['*']
 
-def preprocess_data(text):
+def preprocess_data(text): #TODO: Handle multi line HTML elements
     text = re.sub(r'\[\[(File|Image):.*\]\]', '', text)
     for match in re.findall(r'\[\[[^\[\]\|]*\|[^\[\]]*\]\]', text):
         text = text.replace(match, match.split('|')[1][:-2])
@@ -34,6 +34,8 @@ def preprocess_data(text):
     text = re.sub(r'\{\{-\}\}', '', text)
     text = re.sub(r'\{\{|\}\}', '', text, count=0)
     text = re.sub(r'\'\'', '\"', text)
+    text = re.sub(r'"\[https://.*\]"', '', text)
+    text = re.sub(r'\[http://.*\]', '', text)
     text = re.sub(r'<ref.*/>', '', text)
     text = re.sub(r'<ref.*>*</ref>', '', text)
     text = re.sub(r'<!--.*-->', '', text)
@@ -66,7 +68,7 @@ def json_to_string(data):
     return json.dumps(data, indent=4, separators=(', ', ' = '))
 
 def expand_category(category):
-    print('####\nEXPANDING CATEGORY\n####')
+    print('####\nEXPANDING CATEGORY\n####') #TODO: Remove leading new lines from plot
     print(json_to_string(category))
     for page in category:
         title, pageid = page['title'], page['pageid']
