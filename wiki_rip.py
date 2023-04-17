@@ -67,6 +67,7 @@ def expand_category(category):
     print(json_to_string(category))
     for page in category:
         title, pageid = page['title'], page['pageid']
+        if re.match(r'^File:.*$', title): continue
         if re.match(r'^Category:.*$', title):
             expand_category(get_film_list(pageid))
             continue
