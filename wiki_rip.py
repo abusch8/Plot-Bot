@@ -5,13 +5,12 @@ import re
 API_URL = 'https://en.wikipedia.org/w/api.php'
 OUTPUT_PATH = 'dataset.txt'
 GENRE = 'American_science_fiction_films'
-LIMIT = 100
 
-def get_film_list():
+def get_film_list(id=None):
     res = req.get(API_URL, {
         'action': 'query',
         'list': 'categorymembers',
-        'cmtitle': f'Category:{GENRE}',
+        **({'cmtitle': f'Category:{GENRE}'} if id is None else {'cmpageid': id}),
         'cmlimit': 500,
         'format': 'json'
     }).json()
@@ -27,8 +26,8 @@ def get_film_page(id):
     return res['parse']['wikitext']['*']
 
 def preprocess_data(text):
-    matches = re.findall(r'\[\[[^\[\]\|]*\|[^\[\]]*\]\]', text)
-    for match in matches: text = text.replace(match, match.split('|')[1][:-2])
+    for match in re.findall(r'\[\[[^\[\]\|]*\|[^\[\]]*\]\]', text):
+        text = text.replace(match, match.split('|')[1][:-2])
     text = re.sub(r'^\{\{.*\|.*\}\}$', '', text)
     text = re.sub(r'\[\[', '', text)
     text = re.sub(r'\]\]', '', text)
@@ -63,18 +62,20 @@ def write_file(line):
 def json_to_string(data):
     return json.dumps(data, indent=4, separators=(', ', ' = '))
 
+def expand_category(category):
+    print('####\nEXPANDING CATEGORY\n####\n')
+    print(json_to_string(category))
+    for page in category:
+        title, pageid = page['title'], page['pageid']
+        if re.match(r'^Category:.*$', title):
+            expand_category(get_film_list(pageid))
+            continue
+        film_page = get_film_page(pageid)
+        plot = parse_plot(film_page)
+        print(f'Writing \033[1m\33[3m{title}\033[0m \033[96m[ID:{pageid}]\033[0m to file...')
+        write_file(f'####{title}####\n')
+        for line in plot: write_file(f'{line}\n')
+
 if __name__ == '__main__':
     clear_file()
-
-    film_list = get_film_list()
-    print(json_to_string(film_list))
-
-    for x in range(LIMIT):
-        page_id, film_title = film_list[x]['pageid'], film_list[x]['title']
-
-        film_page = get_film_page(page_id)
-        plot = parse_plot(film_page)
-
-        print(f'Writing "{film_title}" [ID:{page_id}] to file...')
-        write_file(f'####{film_title}####\n')
-        for line in plot: write_file(f'{line}\n')
+    expand_category(get_film_list())
