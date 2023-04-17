@@ -26,14 +26,13 @@ def get_film_page(id):
     return res['parse']['wikitext']['*']
 
 def preprocess_data(text):
-    text = re.sub(r'\[\[File:.*\]\]', '', text)
+    text = re.sub(r'\[\[(File|Image):.*\]\]', '', text)
     for match in re.findall(r'\[\[[^\[\]\|]*\|[^\[\]]*\]\]', text):
         text = text.replace(match, match.split('|')[1][:-2])
-    text = re.sub(r'^\{\{.*\|.*\}\}$', '', text).rstrip()
-    text = re.sub(r'\[\[', '', text)
-    text = re.sub(r'\]\]', '', text)
-    text = re.sub(r'\{\{', '', text)
-    text = re.sub(r'\}\}', '', text)
+    text = re.sub(r'^\{\{.*\|.*\}\}$', '', text)
+    text = re.sub(r'\[\[|\]\]', '', text, count=0)
+    text = re.sub(r'\{\{-\}\}', '', text)
+    text = re.sub(r'\{\{|\}\}', '', text, count=0)
     text = re.sub(r'\'\'', '\"', text)
     text = re.sub(r'<ref.*/>', '', text)
     text = re.sub(r'<ref.*>*</ref>', '', text)
