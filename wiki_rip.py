@@ -3,7 +3,7 @@ import json
 import re
 
 API_URL = 'https://en.wikipedia.org/w/api.php'
-GENRE = 'American_horror_films'
+GENRE = 'American_science_fiction_films'
 OUTPUT_PATH = f'data/{GENRE}.txt'
 
 def get_film_list(id=None):
@@ -26,16 +26,20 @@ def get_film_page(id):
     return res['parse']['wikitext']['*']
 
 def preprocess_data(text):
+    text = re.sub(r'\[\[File:.*\]\]', '', text)
     for match in re.findall(r'\[\[[^\[\]\|]*\|[^\[\]]*\]\]', text):
         text = text.replace(match, match.split('|')[1][:-2])
-    text = re.sub(r'^\{\{.*\|.*\}\}$', '', text)
+    text = re.sub(r'^\{\{.*\|.*\}\}$', '', text).rstrip()
     text = re.sub(r'\[\[', '', text)
     text = re.sub(r'\]\]', '', text)
     text = re.sub(r'\{\{', '', text)
     text = re.sub(r'\}\}', '', text)
     text = re.sub(r'\'\'', '\"', text)
+    text = re.sub(r'<ref.*/>', '', text)
     text = re.sub(r'<ref.*>*</ref>', '', text)
-    text = re.sub(r'^<!--.*-->$', '', text)
+    text = re.sub(r'<!--.*-->', '', text)
+    text = re.sub(r'&nbsp;-', ' -', text)
+    text = re.sub(r'refn\|.*\|.*\|', ' ', text)
     return text.strip()
 
 def parse_plot(page):
@@ -74,7 +78,7 @@ def expand_category(category):
         film_page = get_film_page(pageid)
         plot = parse_plot(film_page)
         print(f'Writing \033[1m\33[3m{title}\033[0m \033[96m[ID:{pageid}]\033[0m to {OUTPUT_PATH}')
-        write_file(f'####{title}####\n')
+        if plot: write_file(f'####{title}####\n')
         for line in plot: write_file(f'{line}\n')
 
 if __name__ == '__main__':
