@@ -75,7 +75,8 @@ def expand_category(category):
         plot = parse_plot(get_film_page(pageid))
         print(f'Writing \033[1m\33[3m{title}\033[0m \033[96m[ID:{pageid}]\033[0m to {OUTPUT_PATH}')
         if plot: file.write(f'####{title}####\n')
-        for line in plot: file.write(f'{line}\n')
+        for paragraph in plot:
+            if paragraph: file.write(f'{paragraph}\n\n')
 
 def open_file():
     open(OUTPUT_PATH, 'w').close() # Clear file
