@@ -27,7 +27,7 @@ def get_film_page(id):
     }).json()
     return res['parse']['wikitext']['*']
 
-def preprocess_data(text): #TODO: Handle multi line HTML elements
+def preprocess(text):
     text = re.sub(r'\[\[(File|Image):.*\]\]', '', text)
     for match in re.findall(r'\[\[[^\[\]\|]*\|[^\[\]]*\]\]', text):
         text = text.replace(match, match.split('|')[1][:-2])
@@ -39,11 +39,20 @@ def preprocess_data(text): #TODO: Handle multi line HTML elements
     text = re.sub(r'"\[https://.*\]"', '', text)
     text = re.sub(r'\[http://.*\]', '', text)
     text = re.sub(r'<ref.*/>', '', text)
-    text = re.sub(r'<ref.*>*</ref>', '', text)
+    text = re.sub(r'<ref.*>.*</ref>', '', text)
+    text = re.sub(r'<sub>|<sub/>', '', text, count=0)
     text = re.sub(r'<!--.*-->', '', text)
     text = re.sub(r'&nbsp;', ' ', text)
     text = re.sub(r'refn\|.*\|.*\|', ' ', text)
+    if re.search(r'</ref>|-->', text):
+        preprocess.is_multi_line = False
+        text = re.sub(r'.*</ref>|-->', '', text)
+    if preprocess.is_multi: text = ''
+    if re.search(r'<ref>|<!--', text):
+        preprocess.is_multi_line = True
+        text = re.sub(r'(<ref>|<!--).*', '', text)
     return text.strip()
+preprocess.is_multi_line = False
 
 def parse_plot(page):
     plot = []
@@ -55,11 +64,8 @@ def parse_plot(page):
         elif re.match(r'^.*==.*==.*$', line):
             is_plot = False
             break
-        if is_plot: plot.append(preprocess_data(line))
+        if is_plot: plot.append(preprocess(line))
     return plot
-
-def json_to_string(data):
-    return json.dumps(data, indent=4, separators=(', ', ' = '))
 
 def expand_category(category):
     print('####\nEXPANDING CATEGORY\n####')
@@ -78,8 +84,11 @@ def expand_category(category):
         for paragraph in plot:
             if paragraph: file.write(f'{paragraph}\n\n')
 
+def json_to_string(data):
+    return json.dumps(data, indent=4, separators=(', ', ' = '))
+
 def open_file():
-    open(OUTPUT_PATH, 'w').close() # Clear file
+    open(OUTPUT_PATH, 'w').close()
     return open(OUTPUT_PATH, 'a')
 
 if __name__ == '__main__':
