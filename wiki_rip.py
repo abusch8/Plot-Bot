@@ -56,21 +56,13 @@ def parse_plot(page):
             is_plot = False
             break
         if is_plot: plot.append(preprocess_data(line))
-    return plot.strip()
-
-def clear_file():
-    open(OUTPUT_PATH, 'w').close()
-
-def write_file(line):
-    file = open(OUTPUT_PATH, 'a')
-    file.write(line)
-    file.close()
+    return plot
 
 def json_to_string(data):
     return json.dumps(data, indent=4, separators=(', ', ' = '))
 
 def expand_category(category):
-    print('####\nEXPANDING CATEGORY\n####') #TODO: Remove leading new lines from plot
+    print('####\nEXPANDING CATEGORY\n####')
     print(json_to_string(category))
     for page in category:
         title, pageid = page['title'], page['pageid']
@@ -80,12 +72,17 @@ def expand_category(category):
         if re.match(r'^Category:.*$', title):
             expand_category(get_film_list(pageid))
             continue
-        film_page = get_film_page(pageid)
-        plot = parse_plot(film_page)
+        plot = parse_plot(get_film_page(pageid))
         print(f'Writing \033[1m\33[3m{title}\033[0m \033[96m[ID:{pageid}]\033[0m to {OUTPUT_PATH}')
-        if plot: write_file(f'####{title}####\n')
-        for line in plot: write_file(f'{line}\n')
+        if plot: file.write(f'####{title}####\n')
+        for line in plot: file.write(f'{line}\n')
+
+def open_file():
+    open(OUTPUT_PATH, 'w').close() # Clear file
+    return open(OUTPUT_PATH, 'a')
 
 if __name__ == '__main__':
-    clear_file()
+    global file
+    file = open_file()
     expand_category(get_film_list())
+    file.close()
