@@ -6,6 +6,8 @@ API_URL = 'https://en.wikipedia.org/w/api.php'
 GENRE = 'American_science_fiction_films'
 OUTPUT_PATH = f'data/{GENRE}.txt'
 
+memory = []
+
 def get_film_list(id=None):
     res = req.get(API_URL, {
         'action': 'query',
@@ -39,7 +41,7 @@ def preprocess_data(text): #TODO: Handle multi line HTML elements
     text = re.sub(r'<ref.*/>', '', text)
     text = re.sub(r'<ref.*>*</ref>', '', text)
     text = re.sub(r'<!--.*-->', '', text)
-    text = re.sub(r'&nbsp;-', ' -', text)
+    text = re.sub(r'&nbsp;', ' ', text)
     text = re.sub(r'refn\|.*\|.*\|', ' ', text)
     return text.strip()
 
@@ -54,7 +56,7 @@ def parse_plot(page):
             is_plot = False
             break
         if is_plot: plot.append(preprocess_data(line))
-    return plot
+    return plot.strip()
 
 def clear_file():
     open(OUTPUT_PATH, 'w').close()
@@ -72,6 +74,8 @@ def expand_category(category):
     print(json_to_string(category))
     for page in category:
         title, pageid = page['title'], page['pageid']
+        if pageid in memory: continue
+        memory.append(pageid)
         if re.match(r'^File:.*$', title): continue
         if re.match(r'^Category:.*$', title):
             expand_category(get_film_list(pageid))
