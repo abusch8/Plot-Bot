@@ -88,8 +88,8 @@ def json_to_string(data):
     return json.dumps(data, indent=4, separators=(', ', ' = '))
 
 def open_file():
-    open(OUTPUT_PATH, 'w').close()
-    return open(OUTPUT_PATH, 'a')
+    open(OUTPUT_PATH, 'w', encoding="utf-8").close()
+    return open(OUTPUT_PATH, 'a', encoding="utf-8")
 
 if __name__ == '__main__':
     global file
