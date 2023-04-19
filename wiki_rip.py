@@ -47,7 +47,7 @@ def preprocess(text):
     if re.search(r'</ref>|-->', text):
         preprocess.is_multi_line = False
         text = re.sub(r'.*</ref>|-->', '', text)
-    if preprocess.is_multi: text = ''
+    if preprocess.is_multi_line: text = ''
     if re.search(r'<ref>|<!--', text):
         preprocess.is_multi_line = True
         text = re.sub(r'(<ref>|<!--).*', '', text)
