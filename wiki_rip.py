@@ -9,23 +9,31 @@ OUTPUT_PATH = f'data/{GENRE}.txt'
 memory = []
 
 def get_film_list(id=None):
-    res = req.get(API_URL, {
-        'action': 'query',
-        'list': 'categorymembers',
-        **({'cmtitle': f'Category:{GENRE}'} if id is None else {'cmpageid': id}),
-        'cmlimit': 500,
-        'format': 'json'
-    }).json()
-    return res['query']['categorymembers']
+    try:
+        res = req.get(API_URL, {
+            'action': 'query',
+            'list': 'categorymembers',
+            **({'cmtitle': f'Category:{GENRE}'} if id is None else {'cmpageid': id}),
+            'cmlimit': 500,
+            'format': 'json'
+        })
+        res.raise_for_status()
+    except req.exceptions.RequestException as err:
+        SystemExit(err)
+    return res.json()['query']['categorymembers']
 
 def get_film_page(id):
-    res = req.get(API_URL, {
-        'action': 'parse',
-        'pageid': id,
-        'prop': 'wikitext',
-        'format': 'json'
-    }).json()
-    return res['parse']['wikitext']['*']
+    try:
+        res = req.get(API_URL, {
+            'action': 'parse',
+            'pageid': id,
+            'prop': 'wikitext',
+            'format': 'json'
+        })
+        res.raise_for_status()
+    except req.exceptions.RequestException as err:
+        SystemExit(err)
+    return res.json()['parse']['wikitext']['*']
 
 def preprocess(text):
     text = re.sub(r'\[\[(File|Image):.*\]\]', '', text)
@@ -36,8 +44,9 @@ def preprocess(text):
     text = re.sub(r'\{\{-\}\}', '', text)
     text = re.sub(r'\{\{|\}\}', '', text, count=0)
     text = re.sub(r'\'\'', '\"', text)
-    text = re.sub(r'"\[https://.*\]"', '', text)
-    text = re.sub(r'\[http://.*\]', '', text)
+    text = re.sub(r'^:\"Note:.*\"$', '', text)
+    text = re.sub(r'\[http(|s)://.*\]', '', text)
+    text = re.sub(r'\"\"', '', text)
     text = re.sub(r'<ref.*/>', '', text)
     text = re.sub(r'<ref.*>.*</ref>', '', text)
     text = re.sub(r'<sub>|<sub/>', '', text, count=0)
@@ -55,44 +64,45 @@ def preprocess(text):
 preprocess.is_multi_line = False
 
 def parse_plot(page):
-    plot = []
+    plot = ''
     is_plot = False
     for line in page.splitlines():
-        if line == '==Plot==':
-            is_plot = True
-            continue
-        elif re.match(r'^.*==.*==.*$', line):
-            is_plot = False
-            break
-        if is_plot: plot.append(preprocess(line))
-    return plot
+        if line == '==Plot==': is_plot = True
+        elif re.match(r'^.*==.*==.*$', line): is_plot = False
+        elif is_plot: plot += f'{preprocess(line)}\n'
+    return plot.strip()
 
 def expand_category(category):
     print('####\nEXPANDING CATEGORY\n####')
     print(json_to_string(category))
     for page in category:
-        title, pageid = page['title'], page['pageid']
-        if pageid in memory: continue
-        memory.append(pageid)
+        title = re.sub(r'\ \(.*film\)', '', page['title'])
+        page_id = page['pageid']
+        if page_id in memory:
+            print(f'\033[91mSKIPPED\033[0m \033[1m\33[3m{title}\033[0m \033[96m[ID:{page_id}]\033[0m Reason: Duplicate')
+            continue
+        memory.append(page_id)
         if re.match(r'^File:.*$', title): continue
         if re.match(r'^Category:.*$', title):
-            expand_category(get_film_list(pageid))
+            expand_category(get_film_list(page_id))
             continue
-        plot = parse_plot(get_film_page(pageid))
-        print(f'Writing \033[1m\33[3m{title}\033[0m \033[96m[ID:{pageid}]\033[0m to {OUTPUT_PATH}')
-        if plot: file.write(f'####{title}####\n')
-        for paragraph in plot:
-            if paragraph: file.write(f'{paragraph}\n\n')
+        plot = parse_plot(get_film_page(page_id))
+        if plot:
+            print(f'\033[92mWRITING\033[0m \033[1m\33[3m{title}\033[0m \033[96m[ID:{page_id}]\033[0m Output: {OUTPUT_PATH}')
+            file.write(f'####{title}####\n{plot}\n\n')
+        else:
+            print(f'\033[91mSKIPPED\033[0m \033[1m\33[3m{title}\033[0m \033[96m[ID:{page_id}]\033[0m Reason: No plot')
 
 def json_to_string(data):
     return json.dumps(data, indent=4, separators=(', ', ' = '))
 
 def open_file():
-    open(OUTPUT_PATH, 'w', encoding="utf-8").close()
-    return open(OUTPUT_PATH, 'a', encoding="utf-8")
+    open(OUTPUT_PATH, mode='w').close()
+    return open(OUTPUT_PATH, mode='a', encoding="utf-8")
 
 if __name__ == '__main__':
     global file
     file = open_file()
     expand_category(get_film_list())
     file.close()
+    print('####\nCOMPLETED\n####')
