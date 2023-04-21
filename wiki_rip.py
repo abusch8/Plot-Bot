@@ -1,3 +1,4 @@
+import sys
 import requests as req
 import json
 import re
@@ -73,7 +74,7 @@ def parse_plot(page):
     return plot.strip()
 
 def expand_category(category):
-    print('####\nEXPANDING CATEGORY\n####')
+    print('\033[1m\033[3m####\nEXPANDING CATEGORY\n####\033[0m')
     print(json_to_string(category))
     for page in category:
         title = re.sub(r'\ \(.*film\)', '', page['title'])
@@ -88,10 +89,10 @@ def expand_category(category):
             continue
         plot = parse_plot(get_film_page(page_id))
         if plot:
-            print(f'\033[92mWRITING\033[0m \033[1m\33[3m{title}\033[0m \033[96m[ID:{page_id}]\033[0m Output: {OUTPUT_PATH}')
+            print(f'\033[92mWRITING\033[0m \033[1m\033[3m{title}\033[0m \033[96m[ID:{page_id}]\033[0m Output: {OUTPUT_PATH}')
             file.write(f'####{title}####\n{plot}\n\n')
         else:
-            print(f'\033[91mSKIPPED\033[0m \033[1m\33[3m{title}\033[0m \033[96m[ID:{page_id}]\033[0m Reason: No plot')
+            print(f'\033[91mSKIPPED\033[0m \033[1m\033[3m{title}\033[0m \033[96m[ID:{page_id}]\033[0m Reason: No plot')
 
 def json_to_string(data):
     return json.dumps(data, indent=4, separators=(', ', ' = '))
@@ -101,8 +102,9 @@ def open_file():
     return open(OUTPUT_PATH, mode='a', encoding="utf-8")
 
 if __name__ == '__main__':
+    if sys.argv: GENRE = sys.argv[1]
     global file
     file = open_file()
     expand_category(get_film_list())
     file.close()
-    print('####\nCOMPLETED\n####')
+    print('\033[1m\33[3m####\nCOMPLETED\n####\033[0m')
