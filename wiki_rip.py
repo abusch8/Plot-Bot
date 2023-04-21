@@ -17,7 +17,6 @@ def get_category(id=None, genre=None):
             'cmlimit': 500,
             'format': 'json'
         })
-        print(res.json())
         res.raise_for_status()
     except req.exceptions.RequestException as err: SystemExit(err)
     return res.json()['query']['categorymembers']
@@ -99,6 +98,8 @@ def get_genre_options():
     options = []
     genre_list = get_category(genre='American_films_by_genre')
     for i in range(len(genre_list)):
+        title = re.sub(r'Category:', '', genre_list[i]["title"])
+        print(f'{i + 1:2d}) {title}')
         options.append(genre_list[i])
     return options
 
@@ -110,14 +111,11 @@ if __name__ == '__main__':
     global file
     global output_path
     options = get_genre_options()
-    for i in range(len(options)):
-        title = re.sub(r'Category:', '', options[i]["title"])
-        print(f'{i + 1}) {title}')
     choice = int(input('Genre: ')) - 1
-    title = re.sub(r'Category:', '', options[choice]["title"])
+    if choice not in range(len(options)): SystemExit('Invalid selection')
+    title = re.sub(r'Category:', '', options[choice]['title'])
     output_path = f'data/{title}.txt'
     file = open_file(output_path)
-    if choice not in range(len(options)): SystemExit('')
     expand_category(get_category(options[choice]['pageid']))
     file.close()
     print('\033[1m\33[3m####\nCOMPLETED\n####\033[0m')
