@@ -98,20 +98,20 @@ def get_genre_options():
     options = []
     genre_list = get_category(genre='American_films_by_genre')
     for i in range(len(genre_list)):
-        title = re.sub(r'Category:', '', genre_list[i]["title"])
+        title = re.sub(r'Category:', '', genre_list[i]['title'])
         print(f'{i + 1:2d}) {title}')
         options.append(genre_list[i])
     return options
 
 def open_file(path):
     open(path, mode='w').close()
-    return open(path, mode='a', encoding="utf-8")
+    return open(path, mode='a', encoding='utf-8')
 
 if __name__ == '__main__':
     global file
     global output_path
     options = get_genre_options()
-    choice = int(input('Genre: ')) - 1
+    choice = int(input('Genre: ')) - 1;
     if choice not in range(len(options)): SystemExit('Invalid selection')
     title = re.sub(r'Category:', '', options[choice]['title'])
     output_path = f'data/{title}.txt'
