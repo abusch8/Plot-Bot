@@ -17,7 +17,7 @@ out_dir = 'out' # ignored if init_from is not 'resume'
 start = "\n" # or "<|endoftext|>" or etc. Can also specify a file, use as: "FILE:prompt.txt"
 # num_samples = 1 # number of samples to draw
 # max_new_tokens = 10000 # number of tokens generated in each sample
-max_gen = 10 # number of tokens generated, multiplied by 1000
+max_gen = 10 # number of tokens to generate, multiplied by 1000
 temperature = 0.8 # 1.0 = no change, < 1.0 = less random, > 1.0 = more random, in predictions
 top_k = 1000 # retain only the top_k most likely tokens, clamp others to have 0 probability
 # seed = 1337
@@ -91,7 +91,7 @@ file = open(f"{out_dir}/{OUTPUT_FILE}", mode="a", encoding="utf-8")
 with torch.no_grad():
     with ctx:
         idx = x
-        for _ in range(8 * 1000):
+        for _ in range(max_gen * 1000):
             sys.stdout.flush()
             idx = model.inf_generate(idx, temperature, top_k)
             decoded_text = decode(idx[0].tolist())
