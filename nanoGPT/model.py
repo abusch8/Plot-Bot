@@ -342,7 +342,7 @@ class GPT(nn.Module):
         return mfu
 
     @torch.no_grad()
-    def generate(self, idx, max_new_tokens, temperature=1.0, top_k=None):
+    def num_generate(self, idx, max_new_tokens, temperature=1.0, top_k=None):
         """
         Take a conditioning sequence of indices idx (LongTensor of shape (b,t)) and complete
         the sequence max_new_tokens times, feeding the predictions back into the model each time.
@@ -369,7 +369,7 @@ class GPT(nn.Module):
         return idx
 
     @torch.no_grad()
-    def infinite_generate(self, idx, temperature=1.0, top_k=None):
+    def inf_generate(self, idx, temperature=1.0, top_k=None):
         # if the sequence context is growing too long we must crop it at block_size
         idx_cond = idx if idx.size(1) <= self.config.block_size else idx[:, -self.config.block_size:]
         # forward the model to get the logits for the index in the sequence

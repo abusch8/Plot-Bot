@@ -9,12 +9,15 @@ import torch
 import tiktoken
 from model import GPTConfig, GPT
 
+OUTPUT_FILE = "40,000.txt"
+
 # -----------------------------------------------------------------------------
 init_from = 'resume' # either 'resume' (from an out_dir) or a gpt2 variant (e.g. 'gpt2-xl')
 out_dir = 'out' # ignored if init_from is not 'resume'
 start = "\n" # or "<|endoftext|>" or etc. Can also specify a file, use as: "FILE:prompt.txt"
 # num_samples = 1 # number of samples to draw
 # max_new_tokens = 10000 # number of tokens generated in each sample
+max_gen = 10 # number of tokens generated, multiplied by 1000
 temperature = 0.8 # 1.0 = no change, < 1.0 = less random, > 1.0 = more random, in predictions
 top_k = 1000 # retain only the top_k most likely tokens, clamp others to have 0 probability
 # seed = 1337
@@ -77,25 +80,20 @@ else:
 
 # encode the beginning of the prompt
 if start.startswith('FILE:'):
-    with open(start[5:], 'r', encoding='utf-8') as f:
+    with open(start[5:], mode='r', encoding='utf-8') as f:
         start = f.read()
 start_ids = encode(start)
 x = (torch.tensor(start_ids, dtype=torch.long, device=device)[None, ...])
 
-# run generation
-# with torch.no_grad():
-#     with ctx:
-#         for k in range(num_samples):
-#             y = model.generate(x, max_new_tokens, temperature=temperature, top_k=top_k)
-#             print(decode(y[0].tolist()))
-#             print('---------------')
+open(f"{out_dir}/{OUTPUT_FILE}", mode="w").close() # clear file
+file = open(f"{out_dir}/{OUTPUT_FILE}", mode="a", encoding="utf-8")
 
 with torch.no_grad():
     with ctx:
         idx = x
-        while True:
-            # print("-----")
+        for _ in range(8 * 1000):
             sys.stdout.flush()
-            idx = model.infinite_generate(idx, temperature=temperature, top_k=top_k)
-            # idx = model.infinite_generate(idx, temperature=temperature)
-            print(decode(idx[0].tolist()))
+            idx = model.inf_generate(idx, temperature, top_k)
+            decoded_text = decode(idx[0].tolist())
+            print(decoded_text)
+            file.write(decoded_text[len(decoded_text) - 1])
