@@ -12,7 +12,7 @@ from model import GPTConfig, GPT
 init_from = 'resume' # either 'resume' (from an out_dir) or a gpt2 variant (e.g. 'gpt2-xl')
 out_dir = 'out-science-fiction' # ignored if init_from is not 'resume'
 start = "\n" # or "<|endoftext|>" or etc. Can also specify a file, use as: "FILE:prompt.txt"
-max_gen = 10 # number of tokens to generate, multiplied by 1000
+max_gen = 50 # number of tokens to generate, multiplied by 1000
 temperature = 0.8 # 1.0 = no change, < 1.0 = less random, > 1.0 = more random, in predictions
 top_k = 1000 # retain only the top_k most likely tokens, clamp others to have 0 probability
 seed = 1818
@@ -89,8 +89,8 @@ if start.startswith('FILE:'):
 start_ids = encode(start)
 x = (torch.tensor(start_ids, dtype=torch.long, device=device)[None, ...])
 
-open(f"{out_dir}/{output_file}", mode="w").close() # clear file
-file = open(f"{out_dir}/{output_file}", mode="a", encoding="utf-8")
+open(f'{out_dir}/{output_file}', mode='w').close() # clear file
+file = open(f'{out_dir}/{output_file}', mode='a', encoding='utf-8')
 
 with torch.no_grad():
     with ctx:
