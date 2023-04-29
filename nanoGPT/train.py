@@ -341,7 +341,7 @@ while True:
 if ddp:
     destroy_process_group()
 
-print('Plotting results...')
+print('Plotting results...') # TODO restore plot data on resumes
 df = pd.DataFrame(data)
 fig = px.line(df, x='iter', y='loss', title='Loss Over Iterations')
 fig.show()

@@ -8,8 +8,6 @@ import torch
 import tiktoken
 from model import GPTConfig, GPT
 
-# OUTPUT_FILE = "40,000.txt" # TODO name file based off of most recent chkpt
-
 # -----------------------------------------------------------------------------
 init_from = 'resume' # either 'resume' (from an out_dir) or a gpt2 variant (e.g. 'gpt2-xl')
 out_dir = 'out-science-fiction' # ignored if init_from is not 'resume'
@@ -40,9 +38,8 @@ if init_from == 'resume':
     ckpt_path = sorted(glob.glob(f'{out_dir}/ckpt_iter*.pt'), key=extract_number, reverse=True)[0]
 
     global output_file
+
     if re.search(r'^.*\/ckpt_iter\d*\.pt$', ckpt_path):
-        # match = re.search(r'iter\d+', ckpt_path)
-        # output_file = f'{match.group()}.txt'
         output_file = f'iter{"".join(filter(str.isdigit, ckpt_path))}.txt'
     else:
         output_file = 'output.txt'
