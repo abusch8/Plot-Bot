@@ -17,6 +17,7 @@ $ torchrun --nproc_per_node=8 --nnodes=2 --node_rank=1 --master_addr=123.456.123
 """
 
 import os
+import glob
 import time
 import math
 import pickle
@@ -28,6 +29,9 @@ from torch.nn.parallel import DistributedDataParallel as DDP
 from torch.distributed import init_process_group, destroy_process_group
 
 from model import GPTConfig, GPT
+
+import plotly.express as px
+import pandas as pd
 
 # -----------------------------------------------------------------------------
 # default config values designed to train a gpt2 (124M) on OpenWebText
@@ -153,7 +157,7 @@ if init_from == 'scratch':
 elif init_from == 'resume':
     print(f"Resuming training from {out_dir}")
     # resume training from a checkpoint.
-    ckpt_path = os.path.join(out_dir, 'ckpt.pt')
+    ckpt_path = sorted(glob.glob(f'{out_dir}/ckpt_iter*.pt'), reverse=True)[0] # get most recent checkpoint
     checkpoint = torch.load(ckpt_path, map_location=device)
     checkpoint_model_args = checkpoint['model_args']
     # force these config attributes to be equal otherwise we can't even resume training
@@ -247,6 +251,9 @@ t0 = time.time()
 local_iter_num = 0 # number of iterations in the lifetime of this process
 raw_model = model.module if ddp else model # unwrap DDP container if needed
 running_mfu = -1.0
+
+data = {'iter': [], 'loss': []}
+
 while True:
 
     # determine and set the learning rate for this iteration
@@ -258,6 +265,8 @@ while True:
     if iter_num % eval_interval == 0 and master_process:
         losses = estimate_loss()
         print(f"step {iter_num}: train loss {losses['train']:.4f}, val loss {losses['val']:.4f}")
+        data['iter'].append(iter_num)
+        data['loss'].append(losses['train'].item())
         if wandb_log:
             wandb.log({
                 "iter": iter_num,
@@ -278,7 +287,7 @@ while True:
                     'config': config,
                 }
                 print(f"saving checkpoint to {out_dir}")
-                torch.save(checkpoint, os.path.join(out_dir, 'ckpt.pt'))
+                torch.save(checkpoint, os.path.join(out_dir, f'ckpt_iter{iter_num}.pt'))
     if iter_num == 0 and eval_only:
         break
 
@@ -320,6 +329,8 @@ while True:
             mfu = raw_model.estimate_mfu(batch_size * gradient_accumulation_steps, dt)
             running_mfu = mfu if running_mfu == -1.0 else 0.9*running_mfu + 0.1*mfu
         print(f"iter {iter_num}: loss {lossf:.4f}, time {dt*1000:.2f}ms, mfu {running_mfu*100:.2f}%")
+        data['iter'].append(iter_num)
+        data['loss'].append(losses['train'].item())
     iter_num += 1
     local_iter_num += 1
 
@@ -329,3 +340,8 @@ while True:
 
 if ddp:
     destroy_process_group()
+
+print('Plotting results...')
+df = pd.DataFrame(data)
+fig = px.line(df, x='iter', y='loss', title='Loss Over Iterations')
+fig.show()
