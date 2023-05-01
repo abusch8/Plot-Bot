@@ -33,12 +33,11 @@ ctx = nullcontext() if device_type == 'cpu' else torch.amp.autocast(device_type=
 # model
 if init_from == 'resume':
     # init from a model saved in a specific directory
-    extract_number = lambda s: int(''.join(filter(str.isdigit, s)))
 
+    extract_number = lambda s: int(''.join(filter(str.isdigit, s)))
     ckpt_path = sorted(glob.glob(f'{out_dir}/ckpt_iter*.pt'), key=extract_number, reverse=True)[0]
 
     global output_file
-
     if re.search(r'^.*\/ckpt_iter\d*\.pt$', ckpt_path):
         output_file = f'iter{"".join(filter(str.isdigit, ckpt_path))}.txt'
     else:
