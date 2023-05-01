@@ -6,7 +6,7 @@ def analyze_sentence(sentence):
     api_key = "YOUR_API_KEY"
 
     params = {
-        "version": "2021-03-25",
+        "version": "2021-03-25", 
         "features": "sentiment",
         "text": sentence
     }
