@@ -15,6 +15,6 @@ def check_sentence_logic(sentence):
     return is_logical
 
 # Example usage
-sentence = "I am am"
+sentence = "I am am am"
 is_logical = check_sentence_logic(sentence)
 print(f"The sentence '{sentence}' is logical: {is_logical}")
