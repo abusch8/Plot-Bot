@@ -30,4 +30,5 @@ if __name__ == '__main__':
         data['iter'].append(extract_number(file_path))
         data['errors'].append(errors)
     print('Plotting results...')
+    print(data)
     plot(data)
