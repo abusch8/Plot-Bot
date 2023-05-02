@@ -5,17 +5,29 @@ import plotly.express as px
 import pandas as pd
 
 API_URL = 'https://api.languagetool.org/v2/check'
-INPUT_DIR = 'input'
+DATA_DIR = '../nanoGPT/out-science-fiction'
 
 def check_grammar(file_path):
-    with open(file_path, 'r') as file:
+    with open(file_path, mode='r', encoding='utf-8') as file:
         res = req.post(API_URL, {
             'text': file.read(),
             'language': 'en-US',
         }).json()
     return len(res['matches'])
 
+def plot(data):
+    df = pd.DataFrame(data)
+    fig = px.line(df, x='iter', y='errors', title='Grammatical Errors Over Iterations')
+    fig.show()
+
 if __name__ == '__main__':
-    for file_path in glob.glob(f'{INPUT_DIR}/*.txt'):
+    data = { 'iter': [], 'errors': [] }
+    extract_number = lambda s: int(''.join(filter(str.isdigit, s)))
+    for file_path in sorted(glob.glob(f'{DATA_DIR}/*.txt'), key=extract_number):
         print(f'Evaluating {file_path}...')
-        print(f'Number of grammatical errors: {check_grammar(file_path)}')
+        errors = check_grammar(file_path)
+        print(f'Number of grammatical errors: {errors}')
+        data['iter'].append(extract_number(file_path))
+        data['errors'].append(errors)
+    print('Plotting results...')
+    plot(data)

@@ -39,7 +39,7 @@ if init_from == 'resume':
 
     global output_file
     if re.search(r'^.*\/ckpt_iter\d*\.pt$', ckpt_path):
-        output_file = f'iter{"".join(filter(str.isdigit, ckpt_path))}.txt'
+        output_file = f'iter{extract_number(ckpt_path)}.txt'
     else:
         output_file = 'output.txt'
 
