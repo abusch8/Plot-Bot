@@ -104,7 +104,7 @@ def get_genre_options():
     return options
 
 def open_file(path):
-    open(path, mode='w').close()
+    open(path, mode='w').close() # clear file
     return open(path, mode='a', encoding='utf-8')
 
 if __name__ == '__main__':
