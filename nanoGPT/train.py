@@ -76,6 +76,7 @@ backend = 'nccl' # 'nccl', 'gloo', etc.
 # system
 device = 'cuda' # examples: 'cpu', 'cuda', 'cuda:0', 'cuda:1' etc., or try 'mps' on macbooks
 dtype = 'float16' # 'float32', 'bfloat16', or 'float16', the latter will auto implement a GradScaler
+# TODO use this shit
 compile = False # use PyTorch 2.0 to compile the model to be faster
 # -----------------------------------------------------------------------------
 config_keys = [k for k,v in globals().items() if not k.startswith('_') and isinstance(v, (int, float, bool, str))]
@@ -255,19 +256,14 @@ raw_model = model.module if ddp else model # unwrap DDP container if needed
 running_mfu = -1.0
 
 plot_data = {'iter': [], 'loss': []}
-file_path = f'{out_dir}/plot_data.json'
+plot_data_file_path = f'{out_dir}/plot_data.json'
 
-if os.path.exists(file_path) and os.path.getsize(file_path):
-    plot_data_file = open(file_path, mode='r+', encoding='utf-8')
-    plot_data = json.load(plot_data_file)
-    index = plot_data['iter'].index(iter_num)
-    plot_data['iter'] = plot_data['iter'][:index]
-    plot_data['loss'] = plot_data['loss'][:index]
-    plot_data_file.write('')
-    plot_data_file.seek(0)
-    json.dump(plot_data, plot_data_file)
-else:
-    plot_data_file = open(file_path, mode='w', encoding='utf-8')
+if init_from == 'resume' and os.path.exists(plot_data_file_path) and os.path.getsize(plot_data_file_path):
+    with open(plot_data_file_path, mode='r', encoding='utf-8') as file:
+        plot_data = json.load(file)
+        index = plot_data['iter'].index(iter_num)
+        plot_data['iter'] = plot_data['iter'][:index]
+        plot_data['loss'] = plot_data['loss'][:index]
 
 while True:
     # determine and set the learning rate for this iteration
@@ -279,10 +275,6 @@ while True:
     if iter_num % eval_interval == 0 and master_process:
         losses = estimate_loss()
         print(f"step {iter_num}: train loss {losses['train']:.4f}, val loss {losses['val']:.4f}")
-        # plot_data['iter'].append(iter_num)
-        # plot_data['loss'].append(losses['train'].item())
-        # plot_data_file.seek(0)
-        # json.dump(plot_data, plot_data_file)
         if wandb_log:
             wandb.log({
                 "iter": iter_num,
@@ -346,10 +338,9 @@ while True:
             running_mfu = mfu if running_mfu == -1.0 else 0.9*running_mfu + 0.1*mfu
         print(f"iter {iter_num}: loss {lossf:.4f}, time {dt*1000:.2f}ms, mfu {running_mfu*100:.2f}%")
         plot_data['iter'].append(iter_num)
-        plot_data['loss'].append(losses['train'].item())
-        plot_data_file.write('')
-        plot_data_file.seek(0)
-        json.dump(plot_data, plot_data_file)
+        plot_data['loss'].append(lossf)
+        with open(plot_data_file_path, mode='w', encoding='utf-8') as file:
+            json.dump(plot_data, file)
     iter_num += 1
     local_iter_num += 1
 
@@ -364,5 +355,3 @@ print('Plotting results...')
 df = pd.DataFrame(plot_data)
 fig = px.line(df, x='iter', y='loss', title='Loss Over Iterations')
 fig.show()
-
-plot_data_file.close()
