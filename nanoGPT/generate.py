@@ -10,7 +10,7 @@ from model import GPTConfig, GPT
 
 # -----------------------------------------------------------------------------
 init_from = 'resume' # either 'resume' (from an out_dir) or a gpt2 variant (e.g. 'gpt2-xl')
-out_dir = 'out-science-fiction' # ignored if init_from is not 'resume'
+out_dir = 'out-fantasy' # ignored if init_from is not 'resume'
 start = "\n" # or "<|endoftext|>" or etc. Can also specify a file, use as: "FILE:prompt.txt"
 max_gen = 50 # number of tokens to generate, multiplied by 1000
 temperature = 0.8 # 1.0 = no change, < 1.0 = less random, > 1.0 = more random, in predictions
@@ -37,11 +37,7 @@ if init_from == 'resume':
     extract_number = lambda s: int(''.join(filter(str.isdigit, s)))
     ckpt_path = sorted(glob.glob(f'{out_dir}/ckpt_iter*.pt'), key=extract_number, reverse=True)[0]
 
-    global output_file
-    if re.search(r'^.*\/ckpt_iter\d*\.pt$', ckpt_path):
-        output_file = f'iter{extract_number(ckpt_path)}.txt'
-    else:
-        output_file = 'output.txt'
+    output_file = f'iter{extract_number(ckpt_path)}.txt'
 
     checkpoint = torch.load(ckpt_path, map_location=device)
     gptconf = GPTConfig(**checkpoint['model_args'])
@@ -100,3 +96,4 @@ with torch.no_grad():
             decoded_text = decode(idx[0].tolist())
             print(decoded_text)
             file.write(decoded_text[len(decoded_text) - 1])
+file.close()

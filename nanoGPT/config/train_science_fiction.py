@@ -3,7 +3,7 @@ eval_interval = 250
 eval_iters = 200
 log_interval = 10
 
-always_save_checkpoint = False
+always_save_checkpoint = True
 
 wandb_log = False # override via command line if you like
 wandb_project = 'science_fiction'
@@ -21,7 +21,7 @@ dropout = 0.2
 
 learning_rate = 1e-3 # with baby networks can afford to go a bit higher
 max_iters = 20000
-lr_decay_iters = 17050 # make equal to max_iters usually
+lr_decay_iters = max_iters # make equal to max_iters usually
 min_lr = 1e-4 # learning_rate / 10 usually
 beta2 = 0.99 # make a bit bigger because number of tokens per iter is small
 
