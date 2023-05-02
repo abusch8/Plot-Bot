@@ -1,25 +1,21 @@
-import requests
-import os
+import requests as req
+import glob
+
+import plotly.express as px
+import pandas as pd
 
 API_URL = 'https://api.languagetool.org/v2/check'
 INPUT_DIR = 'input'
 
-def fix_grammar(input_dir):
-    file_paths = []
-    for file_name in os.listdir(input_dir):
-        if file_name.endswith('.txt'):
-            file_paths.append(os.path.join(input_dir, file_name))
-
-    print(file_paths);
-    for file_path in file_paths:
-        with open(file_path, 'r') as file:
-            print("Evaluating ", file_path)
-            text = file.read()
-            res = requests.post(API_URL, data={
-                'text': text,
-                'language': 'en-US',
-            }).json()
-            print("Number of grammatical errors: ", len(res['matches']))
+def check_grammar(file_path):
+    with open(file_path, 'r') as file:
+        res = req.post(API_URL, {
+            'text': file.read(),
+            'language': 'en-US',
+        }).json()
+    return len(res['matches'])
 
 if __name__ == '__main__':
-    fix_grammar(INPUT_DIR)
+    for file_path in glob.glob(f'{INPUT_DIR}/*.txt'):
+        print(f'Evaluating {file_path}...')
+        print(f'Number of grammatical errors: {check_grammar(file_path)}')
