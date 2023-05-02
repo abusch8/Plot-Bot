@@ -158,7 +158,8 @@ if init_from == 'scratch':
 elif init_from == 'resume':
     print(f"Resuming training from {out_dir}")
     # resume training from a checkpoint.
-    ckpt_path = sorted(glob.glob(f'{out_dir}/ckpt_iter*.pt'), reverse=True)[0] # get most recent checkpoint
+    extract_number = lambda s: int(''.join(filter(str.isdigit, s)))
+    ckpt_path = sorted(glob.glob(f'{out_dir}/ckpt_iter*.pt'), key=extract_number, reverse=True)[0] # get most recent checkpoint
     checkpoint = torch.load(ckpt_path, map_location=device)
     checkpoint_model_args = checkpoint['model_args']
     # force these config attributes to be equal otherwise we can't even resume training
@@ -254,13 +255,17 @@ raw_model = model.module if ddp else model # unwrap DDP container if needed
 running_mfu = -1.0
 
 plot_data = {'iter': [], 'loss': []}
-file_path = f'data/{out_dir}/plot_data.txt'
+file_path = f'{out_dir}/plot_data.json'
 
-global plot_data_file
-if os.path.exits(file_path):
+if os.path.exists(file_path) and os.path.getsize(file_path):
     plot_data_file = open(file_path, mode='r+', encoding='utf-8')
-    plot_data = json.load(plot_data_file.read())[:iter_num]
-    plot_data_file.write(json.dump(plot_data))
+    plot_data = json.load(plot_data_file)
+    index = plot_data['iter'].index(iter_num)
+    plot_data['iter'] = plot_data['iter'][:index]
+    plot_data['loss'] = plot_data['loss'][:index]
+    plot_data_file.write('')
+    plot_data_file.seek(0)
+    json.dump(plot_data, plot_data_file)
 else:
     plot_data_file = open(file_path, mode='w', encoding='utf-8')
 
@@ -274,9 +279,10 @@ while True:
     if iter_num % eval_interval == 0 and master_process:
         losses = estimate_loss()
         print(f"step {iter_num}: train loss {losses['train']:.4f}, val loss {losses['val']:.4f}")
-        plot_data['iter'].append(iter_num)
-        plot_data['loss'].append(losses['train'].item())
-        plot_data_file.write(json.dump(plot_data))
+        # plot_data['iter'].append(iter_num)
+        # plot_data['loss'].append(losses['train'].item())
+        # plot_data_file.seek(0)
+        # json.dump(plot_data, plot_data_file)
         if wandb_log:
             wandb.log({
                 "iter": iter_num,
@@ -341,6 +347,9 @@ while True:
         print(f"iter {iter_num}: loss {lossf:.4f}, time {dt*1000:.2f}ms, mfu {running_mfu*100:.2f}%")
         plot_data['iter'].append(iter_num)
         plot_data['loss'].append(losses['train'].item())
+        plot_data_file.write('')
+        plot_data_file.seek(0)
+        json.dump(plot_data, plot_data_file)
     iter_num += 1
     local_iter_num += 1
 
@@ -351,7 +360,7 @@ while True:
 if ddp:
     destroy_process_group()
 
-print('Plotting results...') # TODO restore plot data on resumes
+print('Plotting results...')
 df = pd.DataFrame(plot_data)
 fig = px.line(df, x='iter', y='loss', title='Loss Over Iterations')
 fig.show()

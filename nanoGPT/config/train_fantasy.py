@@ -9,7 +9,9 @@ wandb_log = False # override via command line if you like
 wandb_project = 'fantasy'
 wandb_run_name = 'mini-gpt'
 
-dataset = 'American fantasy films'
+init_from = 'scratch' # 'scratch' or 'resume' or 'gpt2*'
+
+dataset = 'fantasy'
 gradient_accumulation_steps = 1
 batch_size = 64
 block_size = 256 # context of up to 256 previous characters
