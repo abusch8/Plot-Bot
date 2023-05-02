@@ -5,7 +5,7 @@ import plotly.express as px
 import pandas as pd
 
 API_URL = 'https://api.languagetool.org/v2/check'
-DATA_DIR = '../nanoGPT/out-science-fiction'
+DATA_DIR = '../nanoGPT/out-science_fiction'
 
 def check_grammar(file_path):
     with open(file_path, mode='r', encoding='utf-8') as file:
