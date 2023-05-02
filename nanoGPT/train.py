@@ -32,6 +32,7 @@ from model import GPTConfig, GPT
 
 import plotly.express as px
 import pandas as pd
+import json
 
 # -----------------------------------------------------------------------------
 # default config values designed to train a gpt2 (124M) on OpenWebText
@@ -252,10 +253,18 @@ local_iter_num = 0 # number of iterations in the lifetime of this process
 raw_model = model.module if ddp else model # unwrap DDP container if needed
 running_mfu = -1.0
 
-data = {'iter': [], 'loss': []}
+plot_data = {'iter': [], 'loss': []}
+file_path = f'data/{out_dir}/plot_data.txt'
+
+global plot_data_file
+if os.path.exits(file_path):
+    plot_data_file = open(file_path, mode='r+', encoding='utf-8')
+    plot_data = json.load(plot_data_file.read())[:iter_num]
+    plot_data_file.write(json.dump(plot_data))
+else:
+    plot_data_file = open(file_path, mode='w', encoding='utf-8')
 
 while True:
-
     # determine and set the learning rate for this iteration
     lr = get_lr(iter_num) if decay_lr else learning_rate
     for param_group in optimizer.param_groups:
@@ -265,8 +274,9 @@ while True:
     if iter_num % eval_interval == 0 and master_process:
         losses = estimate_loss()
         print(f"step {iter_num}: train loss {losses['train']:.4f}, val loss {losses['val']:.4f}")
-        data['iter'].append(iter_num)
-        data['loss'].append(losses['train'].item())
+        plot_data['iter'].append(iter_num)
+        plot_data['loss'].append(losses['train'].item())
+        plot_data_file.write(json.dump(plot_data))
         if wandb_log:
             wandb.log({
                 "iter": iter_num,
@@ -329,8 +339,8 @@ while True:
             mfu = raw_model.estimate_mfu(batch_size * gradient_accumulation_steps, dt)
             running_mfu = mfu if running_mfu == -1.0 else 0.9*running_mfu + 0.1*mfu
         print(f"iter {iter_num}: loss {lossf:.4f}, time {dt*1000:.2f}ms, mfu {running_mfu*100:.2f}%")
-        data['iter'].append(iter_num)
-        data['loss'].append(losses['train'].item())
+        plot_data['iter'].append(iter_num)
+        plot_data['loss'].append(losses['train'].item())
     iter_num += 1
     local_iter_num += 1
 
@@ -342,6 +352,8 @@ if ddp:
     destroy_process_group()
 
 print('Plotting results...') # TODO restore plot data on resumes
-df = pd.DataFrame(data)
+df = pd.DataFrame(plot_data)
 fig = px.line(df, x='iter', y='loss', title='Loss Over Iterations')
 fig.show()
+
+plot_data_file.close()
