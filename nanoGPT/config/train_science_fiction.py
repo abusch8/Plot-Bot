@@ -1,4 +1,4 @@
-out_dir = 'out-science-fiction'
+out_dir = 'out-science_fiction'
 eval_interval = 250
 eval_iters = 200
 log_interval = 10
