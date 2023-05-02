@@ -4,8 +4,8 @@ Uses the sentence transformer library to calculate the cosine similarity between
 2 given text files
 '''
 from sentence_transformers import SentenceTransformer, util
-from nltk import sent_tokenize, download
-from os import path, listdir
+from nltk import sent_tokenize
+from os import path
 
 # gather scripts
 print('gathering scripts...')
@@ -19,7 +19,7 @@ inSentences = sent_tokenize(inScript.read())
 print('done! Tokenizing outputs...')
 outSentences = sent_tokenize(outScript.read())
 print('done! Creating model...')
-    
+
 # create model
 model = SentenceTransformer('all-MiniLM-L6-v2')
 print('done!')
