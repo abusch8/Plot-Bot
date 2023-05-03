@@ -2,7 +2,7 @@ import os
 import pickle
 import numpy as np
 
-PATH = '../../../data/American fantasy films.txt'
+PATH = '../../../data/Western robot disaster films.txt'
 
 with open(PATH, mode='r', encoding='utf-8') as file:
     data = file.read()
