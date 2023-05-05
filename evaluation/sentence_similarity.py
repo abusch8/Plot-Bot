@@ -8,9 +8,10 @@ from nltk import sent_tokenize, download
 from pandas import DataFrame
 from plotly.express import line
 import glob
+import torch
 
-samplingDir = '../nanoGPT/out-sciences_fiction'
-scriptPath = '../data/American science fiction films.txt'
+samplingDir = '../nanoGPT/out-fantasy'
+scriptPath = '../data/American fantasy films.txt'
 
 def findSimilarity(inPath, outPath):
     # gather scripts
@@ -30,26 +31,24 @@ def findSimilarity(inPath, outPath):
     embeddings2 = model.encode(outSentences, convert_to_tensor=True)
 
     #Compute cosine-similarities
-    cosine_scores = util.cos_sim(embeddings1, embeddings2)
+    cos_sim = util.cos_sim(embeddings1, embeddings2)
 
-    #Average scores
-    average = 0
-    divisor = 0
-    for i in range(len(inSentences)):
-        average += cosine_scores[i][i]
-        divisor = i + 1
+    mean = torch.mean(cos_sim).item()
+    print('mean similarity: ', mean)
 
-    return average / divisor
+    return mean
 
 def plot(data):
     df = DataFrame(data)
-    fig = line(df, x='iter', y='similarity', title='Similarity to Scripts Over Iterations')
+    fig = line(df, x='iter', y='similarities', title='Similarity to Original Dataset Over Iterations')
     fig.show()
 
 if __name__ == '__main__':
-    data = { 'iter': [], 'similarity': [] }
+    # download('punkt')
+    data = { 'iter': [], 'similarities': [] }
     extract_number = lambda s: int(''.join(filter(str.isdigit, s)))
     for filePath in sorted(glob.glob(f'{samplingDir}/*.txt'), key=extract_number):
+        print(filePath)
         similarities = findSimilarity(scriptPath, filePath)
         data['iter'].append(extract_number(filePath))
         data['similarities'].append(similarities)
