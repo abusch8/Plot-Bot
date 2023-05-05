@@ -10,12 +10,12 @@ from model import GPTConfig, GPT
 
 # -----------------------------------------------------------------------------
 init_from = 'resume' # either 'resume' (from an out_dir) or a gpt2 variant (e.g. 'gpt2-xl')
-out_dir = 'out-fantasy' # ignored if init_from is not 'resume'
+out_dir = 'out-western_robot_gambling' # ignored if init_from is not 'resume'
 start = "\n" # or "<|endoftext|>" or etc. Can also specify a file, use as: "FILE:prompt.txt"
-max_gen = 50 # number of tokens to generate, multiplied by 1000
-temperature = 0.8 # 1.0 = no change, < 1.0 = less random, > 1.0 = more random, in predictions
+max_gen = 1000 # number of tokens to generate, multiplied by 1000
+temperature = 0.9 # 1.0 = no change, < 1.0 = less random, > 1.0 = more random, in predictions
 top_k = 1000 # retain only the top_k most likely tokens, clamp others to have 0 probability
-seed = 1818
+seed = 1894
 device = 'cuda' # examples: 'cpu', 'cuda', 'cuda:0', 'cuda:1', etc.
 dtype = 'float16' # 'float32' or 'bfloat16' or 'float16'
 compile = False # use PyTorch 2.0 to compile the model to be faster

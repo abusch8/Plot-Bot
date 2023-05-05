@@ -1,4 +1,4 @@
-out_dir = 'out-wester_robot_disaster'
+out_dir = 'out-western_robot_disaster'
 eval_interval = 250
 eval_iters = 200
 log_interval = 10
@@ -6,12 +6,12 @@ log_interval = 10
 always_save_checkpoint = True
 
 wandb_log = False # override via command line if you like
-wandb_project = 'wester_robot_disaster'
+wandb_project = 'western_robot_disaster'
 wandb_run_name = 'mini-gpt'
 
 init_from = 'scratch' # 'scratch' or 'resume' or 'gpt2*'
 
-dataset = 'wester_robot_disaster'
+dataset = 'western_robot_disaster'
 gradient_accumulation_steps = 1
 batch_size = 64
 block_size = 256 # context of up to 256 previous characters
