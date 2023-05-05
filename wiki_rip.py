@@ -1,13 +1,19 @@
+"""
+Wikipedia Film Plot Ripper
+Author: Alex Busch
+"""
+
 import requests as req
 import json
 import re
 
 API_URL = 'https://en.wikipedia.org/w/api.php'
+ROOT_CATEGORY = 'American_films_by_genre'
 
 memory = []
 
 def get_category(id=None, genre=None):
-    if not id and not genre: SystemExit('')
+    if not id and not genre: SystemExit('ERROR Requires argument, id or genre')
     try:
         res = req.get(API_URL, {
             'action': 'query',
@@ -96,7 +102,7 @@ def expand_category(category):
 
 def get_genre_options():
     options = []
-    genre_list = get_category(genre='American_films_by_genre')
+    genre_list = get_category(genre=ROOT_CATEGORY)
     for i in range(len(genre_list)):
         title = re.sub(r'Category:', '', genre_list[i]['title'])
         print(f'{i + 1:2d}) {title}')
@@ -112,7 +118,7 @@ if __name__ == '__main__':
     global output_path
     options = get_genre_options()
     choice = int(input('Genre: ')) - 1;
-    if choice not in range(len(options)): SystemExit('Invalid selection')
+    if choice not in range(len(options)): SystemExit('ERROR Invalid selection')
     title = re.sub(r'Category:', '', options[choice]['title'])
     output_path = f'data/{title}.txt'
     file = open_file(output_path)

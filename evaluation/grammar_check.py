@@ -11,7 +11,7 @@ def check_grammar(file_path):
     with open(file_path, mode='r', encoding='utf-8') as file:
         res = req.post(API_URL, {
             'text': file.read(),
-            'language': 'en-US',
+            'language': 'en-US'
         }).json()
     return len(res['matches'])
 

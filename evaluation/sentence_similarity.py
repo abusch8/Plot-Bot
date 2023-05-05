@@ -4,7 +4,7 @@ Uses the sentence transformer library to calculate the cosine similarity between
 2 given text files
 '''
 from sentence_transformers import SentenceTransformer, util
-from nltk import sent_tokenize, download
+from nltk import sent_tokenize
 from pandas import DataFrame
 from plotly.express import line
 import glob
@@ -44,7 +44,7 @@ def plot(data):
     fig.show()
 
 if __name__ == '__main__':
-    # download('punkt')
+    # nltk.download('punkt')
     data = { 'iter': [], 'similarities': [] }
     extract_number = lambda s: int(''.join(filter(str.isdigit, s)))
     for filePath in sorted(glob.glob(f'{samplingDir}/*.txt'), key=extract_number):
