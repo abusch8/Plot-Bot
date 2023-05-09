@@ -1,6 +1,6 @@
-# Plot Bot
+# PlotBot
 
-The following lays out the steps needed to recreate the results of Plot Bot presented in 410.
+The following lays out the steps needed to recreate the results of PlotBot presented in 410.
 
 1.  Install the projects dependencies with `pip3 install -r requirements.txt`.
 
@@ -32,7 +32,7 @@ The following lays out the steps needed to recreate the results of Plot Bot pres
 
 7.  Evaluate the language model.
 
-    Plot Bot offers two methods of evaluation:
+    PlotBot offers two methods of evaluation:
 
     -  **Grammar Check**
 
