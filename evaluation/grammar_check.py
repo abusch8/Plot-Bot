@@ -5,7 +5,7 @@ import plotly.express as px
 import pandas as pd
 
 API_URL = 'https://api.languagetool.org/v2/check'
-DATA_DIR = '../nanoGPT/out-fantasy'
+SAMPLE_DIR = '../nanoGPT/out-fantasy'
 
 def check_grammar(file_path):
     with open(file_path, mode='r', encoding='utf-8') as file:
@@ -23,7 +23,7 @@ def plot(data):
 if __name__ == '__main__':
     data = { 'iter': [], 'errors': [] }
     extract_number = lambda s: int(''.join(filter(str.isdigit, s)))
-    for file_path in sorted(glob.glob(f'{DATA_DIR}/*.txt'), key=extract_number):
+    for file_path in sorted(glob.glob(f'{SAMPLE_DIR}/*.txt'), key=extract_number):
         print(f'Evaluating {file_path}...')
         errors = check_grammar(file_path)
         print(f'Number of grammatical errors: {errors}')

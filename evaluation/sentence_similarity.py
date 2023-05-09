@@ -10,8 +10,8 @@ from plotly.express import line
 import glob
 import torch
 
-samplingDir = '../nanoGPT/out-fantasy'
-scriptPath = '../data/American fantasy films.txt'
+SAMPLE_DIR = '../nanoGPT/out-fantasy'
+INPUT_DIR = '../data/American fantasy films.txt'
 
 def findSimilarity(inPath, outPath):
     # gather scripts
@@ -47,9 +47,9 @@ if __name__ == '__main__':
     # nltk.download('punkt')
     data = { 'iter': [], 'similarities': [] }
     extract_number = lambda s: int(''.join(filter(str.isdigit, s)))
-    for filePath in sorted(glob.glob(f'{samplingDir}/*.txt'), key=extract_number):
+    for filePath in sorted(glob.glob(f'{SAMPLE_DIR}/*.txt'), key=extract_number):
         print(filePath)
-        similarities = findSimilarity(scriptPath, filePath)
+        similarities = findSimilarity(INPUT_DIR, filePath)
         data['iter'].append(extract_number(filePath))
         data['similarities'].append(similarities)
     plot(data)
