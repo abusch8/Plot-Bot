@@ -12,7 +12,7 @@ The following lays out the steps needed to recreate the results of Plot Bot pres
 
     A preparation script needs to be created for the dataset.  These are stored within the data directory under nanoGPT.  Some examples are listed under `sample_data`.
 
-    After created the script run `python3 prepare.py`.  This should generate `train.bin`, `val.bin`, and `meta.pkl` files within the same directory.
+    After creating the script run `python3 prepare.py`.  This should generate `train.bin`, `val.bin`, and `meta.pkl` files within the same directory.
 
 4.  Configure nanoGPT for the specific dataset.
 
